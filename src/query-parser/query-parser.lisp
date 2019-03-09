@@ -200,8 +200,8 @@
 (defprod phrase-query ()
   ("\""
    (^ word)
-   (* (^ ((* white-space) word)
-	 ($add-word-to-phrase parser phrase-query word)))
+   (* (^ ((* white-space) phrase-word)
+	 ($add-word-to-phrase parser phrase-query phrase-word)))
    "\""))
 
 (defprod field-query ()
@@ -217,14 +217,19 @@
 
 (defchartype white-space () '(satisfies white-space-p))
 
+(defprod phrase-word () (non-double-quote-letter (* non-double-quote-letter)))
 (defprod word () (non-wild-letter (* non-wild-letter)))
 (defprod any-word () (any-letter (* any-letter)))
 (defprod wild-word () (+ (/ (wild-letter (? any-word))
 			    (word wild-letter (? any-word)))))
 
 
+(defun double-quote-p (c)
+  (eql c #\"))
+
 (defchartype any-letter '(and (satisfies graphic-char-p) (not (satisfies white-space-p)) (not (satisfies disallowed-punctuation-p))))
 (defchartype non-wild-letter '(and (satisfies graphic-char-p) (not (satisfies white-space-p)) (not (satisfies disallowed-punctuation-p)) (satisfies not-wildcard-char-p)))
+(defchartype non-double-quote-letter '(and (satisfies graphic-char-p) (not (satisfies white-space-p)) (not (satisfies double-quote-p)) (satisfies not-wildcard-char-p)))
 (defchartype wild-letter '(satisfies wildcard-char-p))
 
 (defun wildcard-char-p (char) (member char '(#\* #\?)))
